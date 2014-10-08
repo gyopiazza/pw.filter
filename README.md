@@ -8,7 +8,7 @@ A developers module that adds a few functions to filter data in a similar way to
 Designed and tested on PW 2.5.3
 http://processwire.com
 
----
+
 
 Installation:
 =============
@@ -20,7 +20,7 @@ Installation:
   - Click "Check for new modules".
   - Click "install" next to the new <module-name>.
 
----
+
 
 Usage:
 ======
