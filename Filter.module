@@ -1,0 +1,128 @@
+<?php
+
+/**
+ * Filter module
+ *
+ * This module introduces a filter system inspired by WordPress
+ *
+ * @author Giordano Piazza <gyopiazza@gmail.com>
+ * @copyright Copyright (c) 2014, Giordano Piazza
+ * @link http://giordanopiazza.com
+ *
+ * ProcessWire 2.x 
+ * Copyright (C) 2014 by Ryan Cramer 
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ * 
+ * http://processwire.com
+ *
+ */
+
+class Filter extends WireData implements Module
+{
+	// This static variable will store all the filters
+	public static $filters;
+
+	/**
+	 *
+	 * @return array
+	 */
+	public static function getModuleInfo()
+	{
+		return array(
+			'title' => 'Filter system', 
+			'version' => 1, 
+			'summary' => 'Filter system inspired by WordPress.',
+			'href' => 'http://giordanopiazza.com',
+			'singular' => true, 
+			'autoload' => true, 
+			'icon' => 'filter', 
+		);
+	}
+
+	/**
+     * Set default values before anything else happens
+     *
+     * @return void
+     */
+	public function __construct()
+	{
+		self::$filters = array();
+	}
+
+	/**
+	 * Add a new filter
+	 *
+	 */
+	public function add($tag, $function, $priority = 10)
+	{
+		if (empty(self::$filters[$tag]))
+			self::$filters[$tag] = array();
+
+		array_push(self::$filters[$tag], array('function' => $function, 'priority' => $priority));
+
+		// Add the current key to the item for later sorting
+		$key = max(array_keys(self::$filters[$tag]));
+		self::$filters[$tag][$key]['key'] = $key;
+	}
+
+	/**
+	 * Apply a defined filter
+	 *
+	 */
+	public function apply($tag, $value)
+	{
+		if (isset(self::$filters[$tag]))
+		{
+			// Sort the filters by priority
+			$this->sort(self::$filters[$tag], 'priority', SORT_ASC, 'key', SORT_ASC);
+
+			// Execute the filters
+			foreach (self::$filters[$tag] as $filter)
+			{
+				$value = call_user_func_array($filter['function'], array($value));
+			}
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Sort the filters by priority
+	 *
+	 */
+	public function sort(&$array, $key1, $key1_sort = SORT_DESC, $key2, $key2_sort = SORT_ASC)
+	{
+	    $sort = array();
+
+	    if (count($array) > 0)
+	    {
+	        foreach($array as $k => $v)
+	        {
+	            $first[$k] = $v[$key1];
+	            $second[$k] = $v[$key2];
+	        }
+
+	        array_multisort($first, $key1_sort, $second, $key2_sort, $array);
+	    }
+
+	    unset($sort);
+	}
+}
+
+
+//////////////////////////////////////////////////////////
+
+
+// Helpers
+
+function addFilter($tag, $function, $priority = 10)
+{
+	$filter = wire('modules')->get('Filter');
+	$filter->add($tag, $function, $priority);
+}
+
+function applyFilter($tag, $value)
+{
+	$filter = wire('modules')->get('Filter');
+	return $filter->apply($tag, $value);
+}
