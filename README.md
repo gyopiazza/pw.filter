@@ -27,7 +27,7 @@ Usage:
 
 Once the module is installed you have 2 functions ready to be used anywhere in your app: `addFilter` and `applyFilter`
 
-```
+```php
 function my_function1($value)
 {
 	return 'filtered by my_function1';
